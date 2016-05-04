@@ -5,26 +5,27 @@ number = rand(100)
 
 get '/' do
   guess = params[:guess].to_i 
+  msg = check_guess(guess, number)
+  erb :index, :locals => {:number => number, :msg => msg}
+end
 
-  # require "pry"; binding.pry
+def check_guess(guess, number)
   if guess == number
-    msg = "You guessed the number!\nThe secret number was #{number}"
+    "You guessed the number!\nThe secret number was #{number}."
   elsif guess > number 
     if guess - number > 5
-      msg = "Way too high! Guess again"
+      "Way too high! Guess again"
     else
-      msg = "Too high. Guess again!"
+      "Too high. Guess again!"
     end
-  elsif  guess < number 
+  elsif guess < number 
     if number - guess > 5 
-      msg = "Way too low! Guess again"
+      "Way too low! Guess again"
     else
-      msg  = "Too low. Guess again" 
+      "Too low. Guess again" 
     end
-  else 
-    msg = "Didn't hit one of the cases"
+  else
+    "Didn't hit one of the cases"
   end
-
-  erb :index, :locals => {:number => number, :msg => msg}
 end
 
