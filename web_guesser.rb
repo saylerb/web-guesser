@@ -4,13 +4,12 @@ require_relative 'responses'
 
 set :secret, rand(100)
 disable :debug_mode
-@@total_guesses = 0
+@@remaining_guesses = 5
 previous_guess ||= nil
 
 get '/' do
-  guess = params[:guess].to_i 
-  msg, background_color = check_guess(guess, settings.secret)
-
+  guess = get_guess(params[:guess])
+  msg, background_color = check_guess(guess, settings.secret) if !guess.nil?
   check_total_guesses(previous_guess, guess)
   previous_guess = guess
 
@@ -19,11 +18,19 @@ get '/' do
                           :background_color => background_color}   # :number => number
 end
 
+def get_guess(input)
+  if input.nil? || input == ""
+    return nil
+  else
+    return input.to_i
+  end
+end
+
 def check_total_guesses(previous_guess, guess)
-  @@total_guesses += 1 unless guess == previous_guess
-  if @@total_guesses == 5
+  @@remaining_guesses -= 1 unless guess == previous_guess
+  if @@remaining_guesses == 0
     settings.secret = rand(100)
-    @@total_guesses = 0
+    @@remaining_guesses = 5
   end
 end
 
@@ -45,13 +52,11 @@ def check_guess(guess, number)
   end
 end
 
+
 def generate_debug(previous_guess, guess, number)
   if settings.debug_mode
-    "DEBUG MODE:" + "<br>" + "The secret number is #{number}." +
-    "<br>" + "Previous guess is #{previous_guess}." +
-    "<br>" + "Total guesses: #{@@total_guesses}."
+    Responses.debug_mode(previous_guess, number, @@remaining_guesses)
   else
-    "Your previous guess was #{previous_guess}." +
-    "<br>" + "Total guesses: #{@@total_guesses}."
+    Responses.normal_mode(previous_guess, number, @@remaining_guesses)
   end
 end
